@@ -61,6 +61,26 @@
     <section class="ctrl-card">
       <div class="ctrl-card-title">⚙️ 参数配置</div>
       <div class="param-row">
+        <label>抽样策略</label>
+        <select id="samplingStrategy" class="param-select">
+          <option value="pps">纯PPS（按人口比例）</option>
+          <option value="boost">人口加成（提升大省概率）</option>
+          <option value="log">对数加成（缩小极值）</option>
+          <option value="equal">平等权重（等概率）</option>
+        </select>
+      </div>
+      <div class="param-row" id="boostConfig" style="display:none">
+        <label>加成阈值</label>
+        <div class="param-range">
+          <input type="number" id="boostThreshold" value="500" min="10" max="5000" step="50"> 万人口以上
+        </div>
+      </div>
+      <div class="param-row" id="boostFactorRow" style="display:none">
+        <label>加成系数</label>
+        <input type="range" id="boostFactor" min="1.0" max="3.0" step="0.1" value="1.5" style="width:100px">
+        <span id="boostFactorVal">1.5</span> 倍
+      </div>
+      <div class="param-row">
         <label>每区抽取省份数</label>
         <div class="param-range">
           <input type="number" id="provMin" value="2" min="1" max="3"> 到
@@ -74,6 +94,9 @@
       <div class="param-row">
         <label>每街道抽样人数</label>
         <input type="number" id="peopleCount" value="250" min="50" max="500" class="param-single">
+      </div>
+      <div class="param-row strategy-hint" id="strategyHint">
+        💡 当前：<span id="currentStrategy">纯PPS（按人口比例）</span>
       </div>
     </section>
 
@@ -149,7 +172,7 @@
     <div class="tab-pane active" id="tab-stage1">
       <div class="pane-header">
         <h2>第一阶段：7大区 PPS 抽取省份</h2>
-        <p>按地理区域与饮食习惯划分为 7 个大区，每个区根据人口规模（PPS）随机抽取 2–3 个省份</p>
+        <p>按地理区域与饮食习惯划分为 7 个大区，每个区根据<strong>人口规模</strong>（PPS）随机抽取 2–3 个省份。可在左侧选择抽样策略调整加权方式。</p>
       </div>
       <div id="region-grid" class="region-grid">
         <div class="empty-hint">点击左侧「第一阶段」按钮开始抽样</div>
@@ -161,6 +184,7 @@
       <div class="pane-header">
         <h2>第二阶段：省内 PPS 抽取城市组合</h2>
         <p>每个省级区域内 PPS 随机抽取：<strong>1个省会/特大城市 + 1个地级市 + 2个农村县</strong></p>
+        <p style="font-size:12px;color:var(--gray-60);margin-top:6px">💡 当前策略：<span id="stage2Strategy">纯PPS（按人口比例）</span></p>
       </div>
       <div id="city-list" class="city-list">
         <div class="empty-hint">请先完成第一阶段</div>

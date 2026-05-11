@@ -19,27 +19,86 @@ const SamplingEngine = {
     sampledPeople: [],   // 第四阶段结果
   },
 
+  // 抽样配置
+  config: {
+    strategy: 'pps',    // pps | boost | log | equal
+    boostFactor: 1.5,   // 人口加成系数
+    boostThreshold: 5000000, // 加成阈值（人口大于此值才加成）
+  },
+
   history: [],           // 历史记录
 
   // ─────────────────────────────────────────────
   // PPS 抽样：按 pop 字段加权，抽 n 个不重复
+  // 支持多种加权策略
   // ─────────────────────────────────────────────
-  ppsSample(pool, n) {
+  ppsSample(pool, n, options = {}) {
     if (pool.length <= n) return [...pool];
+
+    const cfg = { ...this.config, ...options };
     const result = [];
     let remaining = [...pool];
+
     for (let i = 0; i < n; i++) {
-      const totalPop = remaining.reduce((s, u) => s + (u.pop || 1), 0);
-      let rand = Math.random() * totalPop;
+      // 计算每个单元的加权权重
+      const weights = remaining.map(u => this._calcWeight(u.pop || 1, cfg));
+      const totalWeight = weights.reduce((s, w) => s + w, 0);
+
+      // 随机抽
+      let rand = Math.random() * totalWeight;
       let idx = 0;
       for (; idx < remaining.length - 1; idx++) {
-        rand -= (remaining[idx].pop || 1);
+        rand -= weights[idx];
         if (rand <= 0) break;
       }
       result.push(remaining[idx]);
       remaining.splice(idx, 1);
     }
     return result;
+  },
+
+  // 根据策略计算权重
+  _calcWeight(pop, cfg) {
+    switch (cfg.strategy) {
+      case 'equal':
+        // 平等权重：每个单元等概率
+        return 1;
+
+      case 'boost':
+        // 人口加成：高人口区域获得加成系数
+        if (pop >= cfg.boostThreshold) {
+          return pop * cfg.boostFactor;
+        }
+        return pop;
+
+      case 'log':
+        // 对数加成：缩小极值差异，但保持相对大小
+        return Math.log10(pop + 1) * 100000;
+
+      case 'pps':
+      default:
+        // 纯PPS：直接按人口比例
+        return pop;
+    }
+  },
+
+  // 获取策略说明
+  getStrategyDesc() {
+    const cfg = this.config;
+    const names = {
+      pps: '纯PPS（按人口比例）',
+      boost: `人口加成（≥${(cfg.boostThreshold/10000).toFixed(0)}万人口 ×${cfg.boostFactor}）`,
+      log: '对数加成（缩小极值差异）',
+      equal: '平等权重（等概率）',
+    };
+    return names[cfg.strategy] || names.pps;
+  },
+
+  // 设置策略
+  setStrategy(strategy, boostFactor = 1.5, boostThreshold = 5000000) {
+    this.config.strategy = strategy;
+    this.config.boostFactor = boostFactor;
+    this.config.boostThreshold = boostThreshold;
   },
 
   // 简单随机不重复抽样

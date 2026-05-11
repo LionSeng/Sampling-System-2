@@ -10,10 +10,58 @@ const UI = {
     document.querySelectorAll('.tab').forEach(btn => {
       btn.addEventListener('click', () => this.switchTab(btn.dataset.tab));
     });
+
+    // 抽样策略选择器
+    const strategySelect = document.getElementById('samplingStrategy');
+    const boostConfig = document.getElementById('boostConfig');
+    const boostFactorRow = document.getElementById('boostFactorRow');
+    const boostFactorSlider = document.getElementById('boostFactor');
+    const boostFactorVal = document.getElementById('boostFactorVal');
+
+    strategySelect.addEventListener('change', (e) => {
+      const strategy = e.target.value;
+      const isBoost = strategy === 'boost';
+      boostConfig.style.display = isBoost ? 'flex' : 'none';
+      boostFactorRow.style.display = isBoost ? 'flex' : 'none';
+      this.updateStrategyHint(strategy);
+      this.applyStrategy();
+    });
+
+    boostFactorSlider.addEventListener('input', (e) => {
+      boostFactorVal.textContent = e.target.value;
+      this.applyStrategy();
+    });
+
+    document.getElementById('boostThreshold').addEventListener('change', () => this.applyStrategy());
+
     // 初始化七普年龄分布参考图
     this.renderAgeDistRef();
     // 加载历史
     this.renderHistory();
+    // 初始化策略提示
+    this.updateStrategyHint('pps');
+  },
+
+  // 更新策略提示
+  updateStrategyHint(strategy) {
+    const hints = {
+      pps: '纯PPS（按人口比例）',
+      boost: '人口加成（提升大省被抽概率）',
+      log: '对数加成（缩小极值差异）',
+      equal: '平等权重（等概率抽取）'
+    };
+    const hint = hints[strategy] || hints.pps;
+    document.getElementById('currentStrategy').textContent = hint;
+    const stage2Hint = document.getElementById('stage2Strategy');
+    if (stage2Hint) stage2Hint.textContent = hint;
+  },
+
+  // 应用策略到抽样引擎
+  applyStrategy() {
+    const strategy = document.getElementById('samplingStrategy').value;
+    const boostFactor = parseFloat(document.getElementById('boostFactor').value) || 1.5;
+    const boostThreshold = (parseInt(document.getElementById('boostThreshold').value) || 500) * 10000;
+    SamplingEngine.setStrategy(strategy, boostFactor, boostThreshold);
   },
 
   // ── Tab 切换 ──────────────────────────────────
@@ -69,6 +117,9 @@ const UI = {
     const engine = SamplingEngine;
     const cfg = this.getConfig();
 
+    // 应用抽样策略
+    this.applyStrategy();
+
     // 检查前置阶段
     if (stage > 1 && engine.state.stage < stage - 1) {
       alert(`请先完成第 ${stage - 1} 阶段`);
@@ -123,6 +174,9 @@ const UI = {
   async runAll() {
     const cfg = this.getConfig();
     const engine = SamplingEngine;
+
+    // 应用抽样策略
+    this.applyStrategy();
     engine.resetState();
 
     await engine.runAll(async (stage, text) => {

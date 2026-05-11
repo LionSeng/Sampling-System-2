@@ -153,6 +153,30 @@ body {
 }
 .param-single { width: 80px; }
 .param-range input:focus, .param-single:focus { outline: none; border-color: var(--blue); }
+.param-select {
+  width: 100%; padding: 8px 10px;
+  border: 1px solid var(--gray-30);
+  border-radius: 6px;
+  font-size: 13px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.param-select:focus { outline: none; border-color: var(--blue); }
+.strategy-hint {
+  font-size: 12px;
+  color: var(--blue);
+  background: rgba(29,114,232,.06);
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+#boostConfig { margin-top: -6px; }
+#boostFactorRow { margin-top: -6px; align-items: center; gap: 8px; }
+#boostFactorRow input[type=range] {
+  flex: 1;
+  accent-color: var(--blue);
+}
 
 /* 阶段按钮 */
 .stage-btn {
