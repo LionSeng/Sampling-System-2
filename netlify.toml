@@ -1,0 +1,12 @@
+[build]
+  command = ""
+  publish = ""
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# SPA fallback - 所有路由回退到 index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
