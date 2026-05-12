@@ -149,6 +149,7 @@
     <!-- 导出 -->
     <section class="ctrl-card">
       <div class="ctrl-card-title">📥 导出结果</div>
+      <button class="btn-export btn-export-excel" onclick="UI.exportExcel()">📊 导出 Excel (.xlsx)</button>
       <button class="btn-export" onclick="UI.exportCSV()">导出 CSV</button>
       <button class="btn-export" onclick="UI.exportJSON()">导出 JSON</button>
     </section>
@@ -250,6 +251,8 @@
 
 <script src="js/data.js"></script>
 <script src="js/sampling.js"></script>
+<!-- SheetJS：Excel 导出 -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

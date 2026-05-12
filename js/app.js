@@ -505,6 +505,108 @@ const UI = {
   // ────────────────────────────────────────────
   // 导出
   // ────────────────────────────────────────────
+
+  // ── Excel 导出（SheetJS） ──
+  exportExcel() {
+    const state = SamplingEngine.state;
+    if (!state.sampledPeople || !state.sampledPeople.length) {
+      alert('请先完成全部四阶段抽样'); return;
+    }
+
+    const wb = XLSX.utils.book_new();
+
+    // ── Sheet 1：第一阶段 - 抽取省份 ──
+    const s1Rows = [['大区', '大区说明', '省份', '省份人口']];
+    for (const p of state.sampledProvinces) {
+      s1Rows.push([
+        p.region?.name || '',
+        p.region?.desc || '',
+        p.name,
+        p.pop,
+      ]);
+    }
+    const ws1 = XLSX.utils.aoa_to_sheet(s1Rows);
+    ws1['!cols'] = [{ wch: 10 }, { wch: 18 }, { wch: 18 }, { wch: 14 }];
+    XLSX.utils.book_append_sheet(wb, ws1, '第一阶段-省份');
+
+    // ── Sheet 2：第二阶段 - 抽取城市 ──
+    const s2Rows = [['大区', '省份', '城市/县名称', '城市角色', '城市人口']];
+    for (const block of state.sampledCities) {
+      for (const city of block.cities) {
+        s2Rows.push([
+          block.province.region?.name || '',
+          block.province.name,
+          city.name,
+          city.cityRole,
+          city.pop,
+        ]);
+      }
+    }
+    const ws2 = XLSX.utils.aoa_to_sheet(s2Rows);
+    ws2['!cols'] = [{ wch: 10 }, { wch: 18 }, { wch: 22 }, { wch: 16 }, { wch: 14 }];
+    XLSX.utils.book_append_sheet(wb, ws2, '第二阶段-城市');
+
+    // ── Sheet 3：第三阶段 - 抽取街道 ──
+    const s3Rows = [['大区', '省份', '城市/县', '城市角色', '街道/乡镇']];
+    for (const block of state.sampledStreets) {
+      for (const street of block.streets) {
+        s3Rows.push([
+          block.province.region?.name || '',
+          block.province.name,
+          block.city.name,
+          block.city.cityRole,
+          street.name,
+        ]);
+      }
+    }
+    const ws3 = XLSX.utils.aoa_to_sheet(s3Rows);
+    ws3['!cols'] = [{ wch: 10 }, { wch: 18 }, { wch: 22 }, { wch: 16 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, ws3, '第三阶段-街道');
+
+    // ── Sheet 4：第四阶段 - 抽样人员名单 ──
+    const s4Rows = [['大区', '省份', '城市/县', '城市角色', '街道/乡镇', '年龄组', '性别']];
+    for (const block of state.sampledPeople) {
+      for (const p of block.people) {
+        s4Rows.push([
+          block.province.region?.name || '',
+          block.province.name,
+          block.city.name,
+          block.city.cityRole,
+          block.street.name,
+          p.ageGroup,
+          p.sex,
+        ]);
+      }
+    }
+    const ws4 = XLSX.utils.aoa_to_sheet(s4Rows);
+    ws4['!cols'] = [
+      { wch: 10 }, { wch: 18 }, { wch: 22 },
+      { wch: 16 }, { wch: 20 }, { wch: 10 }, { wch: 6 }
+    ];
+    XLSX.utils.book_append_sheet(wb, ws4, '第四阶段-人员名单');
+
+    // ── Sheet 5：汇总统计 ──
+    const summary = SamplingEngine.getGlobalSummary();
+    const s5Rows = [
+      ['指标', '数值'],
+      ['抽取省份数', summary.totalProvinces],
+      ['抽取城市数', summary.totalCities],
+      ['抽取街道数', summary.totalStreets],
+      ['抽样总人数', summary.totalPeople],
+      ['抽样男性人数', summary.maleTotal],
+      ['抽样女性人数', summary.totalPeople - summary.maleTotal],
+      ['', ''],
+      ['大区', '抽取省份数'],
+      ...Object.entries(summary.regionDist).map(([k, v]) => [k, v]),
+    ];
+    const ws5 = XLSX.utils.aoa_to_sheet(s5Rows);
+    ws5['!cols'] = [{ wch: 18 }, { wch: 12 }];
+    XLSX.utils.book_append_sheet(wb, ws5, '汇总统计');
+
+    // 导出文件
+    XLSX.writeFile(wb, `分层抽样结果_${dateStr()}.xlsx`);
+  },
+
   exportCSV() {
     const state = SamplingEngine.state;
     if (!state.sampledPeople || !state.sampledPeople.length) {

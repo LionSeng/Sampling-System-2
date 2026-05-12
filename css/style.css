@@ -254,6 +254,13 @@ body {
 }
 .btn-export:last-child { margin-bottom: 0; }
 .btn-export:hover { background: var(--gray-05); border-color: var(--blue); color: var(--blue); }
+.btn-export-excel {
+  background: linear-gradient(135deg, #1d6f42 0%, #217346 100%);
+  color: #fff;
+  border-color: #1d6f42;
+  font-weight: 600;
+}
+.btn-export-excel:hover { background: linear-gradient(135deg, #175533 0%, #1a5c38 100%); color: #fff; border-color: #175533; }
 
 /* ── 右侧结果区 ── */
 .result-area {
