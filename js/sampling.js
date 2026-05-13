@@ -170,7 +170,7 @@ const SamplingEngine = {
 
     for (const { province, cities } of this.state.sampledCities) {
       for (const city of cities) {
-        const pool = DataHelper.getStreets(city.type);
+        const pool = DataHelper.getStreets(city.type, province.abbr);
         const sampled = this.srsWithoutReplacement(pool, streetsPerCity)
           .map((name, idx) => ({
             id: `${city.id}_s${idx}`,
