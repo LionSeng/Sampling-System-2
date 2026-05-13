@@ -2,7 +2,7 @@
  * 抽样引擎 - 严格按照四阶段规格实现
  *
  * 第一阶段：7大区 → PPS 随机抽取 2-3 个省份
- * 第二阶段：每省 → PPS 抽取 1省会/特大 + 1地级市 + 2农村县
+ * 第二阶段：每省 → PPS 抽取 1省会/特大 + 1地级市 + 2县级行政区
  * 第三阶段：每城市/县 → 随机抽取 4 个街道/乡镇
  * 第四阶段：每街道/乡镇 → 按年龄×性别分层，随机抽取 250 人
  */
@@ -133,7 +133,7 @@ const SamplingEngine = {
 
   // ─────────────────────────────────────────────
   // 第二阶段：每省 PPS 抽城市组合
-  //   规则：1个省会/特大城市 + 1个地级市 + 2个农村县
+  //   规则：1个省会/特大城市 + 1个地级市 + 2个县级行政区
   // ─────────────────────────────────────────────
   runStage2() {
     const result = [];
@@ -151,7 +151,7 @@ const SamplingEngine = {
       const combo = [
         ...sampledCapital.map(c  => ({ ...c, cityRole: '省会/特大城市' })),
         ...sampledCity.map(c     => ({ ...c, cityRole: '地级市' })),
-        ...sampledCounties.map(c => ({ ...c, cityRole: '农村县' })),
+        ...sampledCounties.map(c => ({ ...c, cityRole: '县级行政区' })),
       ];
 
       result.push({ province: prov, cities: combo });
