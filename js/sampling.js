@@ -33,7 +33,15 @@ const SamplingEngine = {
   // 支持多种加权策略
   // ─────────────────────────────────────────────
   ppsSample(pool, n, options = {}) {
-    if (pool.length <= n) return [...pool];
+    // 边界保护：如果池子为空或 n<=0，返回空数组
+    if (!pool || pool.length === 0 || n <= 0) return [];
+    
+    // 如果 n >= pool.length，改为抽取全部
+    if (pool.length <= n) {
+      // 打乱顺序后返回
+      const shuffled = [...pool].sort(() => Math.random() - 0.5);
+      return shuffled;
+    }
 
     const cfg = { ...this.config, ...options };
     const result = [];
